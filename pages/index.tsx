@@ -1,7 +1,10 @@
-import { CardTitle, CardHeader, CardContent, Card } from "../components/card"
-import { Web5 } from "@web5/api";
+import { CardTitle, CardHeader, CardContent, Card, CardDescription, CardFooter } from "../components/card"
+import {  Web5 } from "@web5/api";
 import { useState, useEffect } from "react";
-import Footer from "../components/footer";
+import { Label } from "../components/label"
+import { Input } from "../components/input"
+import { Textarea } from "../components/textarea"
+import { Button } from "../components/button"
 
 export default function Component() {
       
@@ -25,6 +28,7 @@ export default function Component() {
 
       if (web5 && did) {
         await configureProtocol(web5, did);
+        await fetchMedicalRecord(web5, did)
       }
 
     };
@@ -39,7 +43,7 @@ export default function Component() {
       "published": true,
       "types": {
         "medicalRecord": {
-          "schema": "medicalRecord",
+          "schema": "https://medibank.dev/medicalRecord",
           "dataFormats": ["application/json"],
         },
       },
@@ -137,7 +141,7 @@ const writeToDwn = async (medicalRecord: any) => {
       data: medicalRecord,
       message: {
         protocol: "https://medibank.dev/medical-records-protocol",
-        protocolPath: "ding",
+        protocolPath: "medicalRecord",
         schema: "https://medibank.dev/medicalRecord",
       },
     });
@@ -157,10 +161,35 @@ const handleSubmit = async (e: any) => {
 
 
 
+const fetchMedicalRecord = async (web5: Web5, did: any) => {
+  const response = await web5.dwn.records.query({
+    from: did,
+    message: {
+      filter: {
+        protocol: "https://medibank.dev/medical-records-protocol",
+        schema: "https://medibank.dev/medicalRecord",
+      },
+    },
+  });
+
+  if (response.records && response.status.code === 200) {
+    const receivedRecords = await Promise.all(
+      response.records.map(async (record) => {
+        const data = await record.data.json();
+        return data;
+      })
+    );
+    console.log("Records:", receivedRecords);
+    return receivedRecords;
+  } else {
+    console.log("error:", response.status);
+  }
+};
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      
-      <main className="flex-grow p-4">
+      {/* <main className="flex-grow p-4">
         <h2 className="text-xl font-semibold mb-4">Your Medical Records</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
@@ -194,8 +223,46 @@ const handleSubmit = async (e: any) => {
             </CardContent>
           </Card>
         </div>
-      </main>
-      <Footer />
+      </main> */}
+      <div>
+      <Card>
+      <CardHeader>
+        <CardTitle>Patient Visit Information</CardTitle>
+        <CardDescription>Please fill out this form regarding your recent medical visit.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="patient-name">Type Of Visit</Label>
+              <Input id="patient-name" placeholder="General Checkup" />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="date-of-visit">Date of Visit</Label>
+              <Input id="date-of-visit" placeholder="Enter date of visit" type="date" />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="visit-reason">Reason for Visit</Label>
+              <Input id="visit-reason" placeholder="Enter reason for visit" />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="visit-summary">Visit Summary</Label>
+              <Textarea className="min-h-[100px]" id="visit-summary" placeholder="Enter a summary of the visit" />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="additional-notes">Additional Notes</Label>
+              <Textarea className="min-h-[100px]" id="additional-notes" placeholder="Enter any additional notes" />
+            </div>
+          </div>
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button variant="outline">Clear</Button>
+        <Button>Submit</Button>
+      </CardFooter>
+    </Card>
+      </div>
     </div>
   )
 }
+
