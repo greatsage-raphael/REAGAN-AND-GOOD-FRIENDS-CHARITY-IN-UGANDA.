@@ -38,7 +38,7 @@ export default function Component() {
   const createProtocolDefinition = () => {
     const mediBankProtocolDefinition = 
     {
-      "protocol": "https://medibankbytes.dev/medical-records-protocol.dev",
+      "protocol": "https://medibank.dev/medical-records-protocol",
       "published": true,
       "types": {
         "medicalRecord": {
@@ -130,6 +130,7 @@ const constructMedicalRecord = (summary: string, doctor: string, reason: string)
     dateAdded: `${currentDate}`,
     time: `${currentTime}`
   };
+  console.log("Medicalrecord:", medicalRecord)
   return medicalRecord;
 };
 
@@ -138,13 +139,15 @@ const writeToDwn = async (medicalRecord: any) => {
   // Check if web5 is not null or undefined
   if (web5) {
     const { record } = await web5.dwn.records.write({
-      data: medicalRecord,
+      data: JSON.stringify(medicalRecord),
       message: {
         protocol: "https://medibank.dev/medical-records-protocol",
         protocolPath: "medicalRecord",
         schema: "https://medibank.dev/medicalRecord",
+        dataFormat: "application/json"
       },
     });
+    console.log("medical 1:", medicalRecord)
     return record;
   } else {
     // Handle the case where web5 is null
@@ -160,6 +163,7 @@ const handleSubmit = async (e: any) => {
   console.log("reason", reason)
   const medicalRecord = constructMedicalRecord(summary, doctor, reason);
   const record = await writeToDwn(medicalRecord);
+  console.log("record", record)
   setIsSaving(false)
 };
 
