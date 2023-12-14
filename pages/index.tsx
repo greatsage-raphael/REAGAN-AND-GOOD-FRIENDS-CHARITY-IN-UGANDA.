@@ -1,7 +1,7 @@
 import { CardTitle, CardHeader, CardContent, Card, CardDescription, CardFooter } from "../components/card"
 import {  Web5 } from "@web5/api";
-import { useState, useEffect } from "react";
-import { Button } from "../components/button"
+import { useState, useEffect, SVGProps } from "react";
+import { useRouter } from 'next/router'
 
 export default function Component() {
       
@@ -12,6 +12,7 @@ export default function Component() {
   const [date, setDate] = useState<string | null >(null)
   const [reason, setReason] = useState("")
   const [isSaving, setIsSaving] = useState(false)
+  const router = useRouter()
 
   
   //connecting to web5 and logging my credentials
@@ -165,6 +166,7 @@ const handleSubmit = async (e: any) => {
   const record = await writeToDwn(medicalRecord);
   console.log("record", record)
   setIsSaving(false)
+  router.push("./records")
 };
 
 
@@ -194,43 +196,10 @@ const fetchMedicalRecord = async (web5: Web5, did: any) => {
   }
 };
 
+console.log("fetchMedicalRecord:", fetchMedicalRecord)
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* <main className="flex-grow p-4">
-        <h2 className="text-xl font-semibold mb-4">Your Medical Records</h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>General Checkup</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Performed on: 2023-12-01</p>
-              <p>Performed by: Dr. John Doe</p>
-              <p>Summary: Regular health checkup. No issues detected.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Dental Checkup</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Performed on: 2023-11-20</p>
-              <p>Performed by: Dr. Jane Smith</p>
-              <p>Summary: Regular dental checkup. One cavity detected and treated.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Eye Checkup</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Performed on: 2023-11-15</p>
-              <p>Performed by: Dr. Alice Johnson</p>
-              <p>Summary: Regular eye checkup. Vision remains 20/20.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </main> */}
       <div>
       <Card>
       <CardHeader>
@@ -238,26 +207,6 @@ const fetchMedicalRecord = async (web5: Web5, did: any) => {
         <CardDescription>Please fill out this form regarding your recent medical visit.</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* <form onSubmit={handleSubmit}>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="date-of-visit">Date of Visit</Label>
-              <Input id="date-of-visit" placeholder="Enter date of visit" type="date" />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="visit-reason">Reason for Visit</Label>
-              <Input id="visit-reason" placeholder="Enter reason for visit" />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="visit-reason">Name of Doctor</Label>
-              <Input id="visit-reason" placeholder="Enter Doctors Name" />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="visit-summary">Visit Summary</Label>
-              <Textarea className="min-h-[100px]" id="visit-summary" placeholder="Enter a summary of the visit" />
-            </div>
-          </div>
-        </form> */}
         <form onSubmit={(e) => handleSubmit(e)}>
             <div className="flex flex-col">
               <label className="sr-only" htmlFor="doctor">
@@ -324,6 +273,27 @@ const fetchMedicalRecord = async (web5: Web5, did: any) => {
     </Card>
       </div>
     </div>
+  )
+}
+
+
+
+function CheckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
   )
 }
 
