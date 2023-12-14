@@ -1,16 +1,15 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/hqs894ZW3ft
- */
-import Link from "next/link"
 import { CardTitle, CardHeader, CardContent, Card } from "../components/card"
 import { Web5 } from "@web5/api";
-import { useState, useEffect, SVGProps } from "react";
+import { useState, useEffect } from "react";
+import Footer from "../components/footer";
 
 export default function Component() {
       
   const [web5, setWeb5] = useState<Web5 | null>(null)
   const [myDid, setMyDid] = useState<string | null>(null)
+  const [doctor, setDoctor] = useState<string | null >(null)
+  const [summary, setSummary] = useState<string | null >(null)
+  const [doctorDid, setDoctorDid] = useState(null)
 
   
   //connecting to web5 and logging my credentials
@@ -78,7 +77,7 @@ export default function Component() {
   // console.log("Local Protocol:", installProtocolLocally)
 
 
-  //Query for Protocol
+  //Checking for Protocol existence
   const queryForProtocol = async (web5: Web5) => {
     return await web5.dwn.protocols.query({
       message: {
@@ -116,23 +115,51 @@ export default function Component() {
 };
 
 
+//making the medical Record
+const constructMedicalRecord = () => {
+  const currentDate = new Date().toLocaleDateString();
+  const currentTime = new Date().toLocaleTimeString();
+  const medicalRecord = {
+    author: myDid,
+    summary: summary,
+    doctor: doctor,
+    date: `${currentDate}`,
+    time: `${currentTime}`
+  };
+  return medicalRecord;
+};
+
+
+const writeToDwn = async (medicalRecord: any) => {
+  // Check if web5 is not null or undefined
+  if (web5) {
+    const { record } = await web5.dwn.records.write({
+      data: medicalRecord,
+      message: {
+        protocol: "https://medibank.dev/medical-records-protocol",
+        protocolPath: "ding",
+        schema: "https://medibank.dev/medicalRecord",
+      },
+    });
+    return record;
+  } else {
+    // Handle the case where web5 is null
+    console.error("web5 is null or undefined");
+    // You might choose to return a default value or throw an error here
+  }
+};
+
+const handleSubmit = async (e: any) => {
+  e.preventDefault();
+  const medicalRecord = constructMedicalRecord();
+  const record = await writeToDwn(medicalRecord);
+};
+
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      <header className="flex items-center h-16 px-4 border-b bg-white">
-        <StethoscopeIcon className="h-6 w-6" />
-        <h1 className="ml-2 text-2xl font-semibold">HealthBank</h1>
-        <nav className="ml-auto font-medium">
-          <Link className="mx-2 text-gray-500 hover:text-gray-900" href="#">
-            Home
-          </Link>
-          <Link className="mx-2 text-gray-500 hover:text-gray-900" href="#">
-            Profile
-          </Link>
-          <Link className="mx-2 text-gray-500 hover:text-gray-900" href="#">
-            Records
-          </Link>
-        </nav>
-      </header>
+      
       <main className="flex-grow p-4">
         <h2 className="text-xl font-semibold mb-4">Your Medical Records</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -168,30 +195,7 @@ export default function Component() {
           </Card>
         </div>
       </main>
-      <footer className="flex items-center justify-center h-16 border-t bg-white">
-        <p className="text-center text-sm text-gray-500">© 2023 HealthApp. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
-  )
-}
-
-function StethoscopeIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
-      <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
-      <circle cx="20" cy="10" r="2" />
-    </svg>
   )
 }
