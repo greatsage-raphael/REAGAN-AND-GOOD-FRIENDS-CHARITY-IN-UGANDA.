@@ -1,18 +1,17 @@
 import { CardTitle, CardHeader, CardContent, Card, CardDescription, CardFooter } from "../components/card"
 import {  Web5 } from "@web5/api";
 import { useState, useEffect } from "react";
-import { Label } from "../components/label"
-import { Input } from "../components/input"
-import { Textarea } from "../components/textarea"
 import { Button } from "../components/button"
 
 export default function Component() {
       
   const [web5, setWeb5] = useState<Web5 | null>(null)
   const [myDid, setMyDid] = useState<string | null>(null)
-  const [doctor, setDoctor] = useState<string | null >(null)
-  const [summary, setSummary] = useState<string | null >(null)
-  const [doctorDid, setDoctorDid] = useState(null)
+  const [doctor, setDoctor] = useState<string>("")
+  const [summary, setSummary] = useState<string >("")
+  const [date, setDate] = useState<string | null >(null)
+  const [reason, setReason] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
 
   
   //connecting to web5 and logging my credentials
@@ -120,14 +119,15 @@ export default function Component() {
 
 
 //making the medical Record
-const constructMedicalRecord = () => {
+const constructMedicalRecord = (summary: string, doctor: string, reason: string) => {
   const currentDate = new Date().toLocaleDateString();
   const currentTime = new Date().toLocaleTimeString();
   const medicalRecord = {
     author: myDid,
     summary: summary,
     doctor: doctor,
-    date: `${currentDate}`,
+    reason: reason,
+    dateAdded: `${currentDate}`,
     time: `${currentTime}`
   };
   return medicalRecord;
@@ -149,14 +149,18 @@ const writeToDwn = async (medicalRecord: any) => {
   } else {
     // Handle the case where web5 is null
     console.error("web5 is null or undefined");
-    // You might choose to return a default value or throw an error here
   }
 };
 
 const handleSubmit = async (e: any) => {
   e.preventDefault();
-  const medicalRecord = constructMedicalRecord();
+  setIsSaving(true)
+  console.log("summary",summary)
+  console.log("doctor", doctor)
+  console.log("reason", reason)
+  const medicalRecord = constructMedicalRecord(summary, doctor, reason);
   const record = await writeToDwn(medicalRecord);
+  setIsSaving(false)
 };
 
 
@@ -185,7 +189,6 @@ const fetchMedicalRecord = async (web5: Web5, did: any) => {
     console.log("error:", response.status);
   }
 };
-
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -231,12 +234,8 @@ const fetchMedicalRecord = async (web5: Web5, did: any) => {
         <CardDescription>Please fill out this form regarding your recent medical visit.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
+        {/* <form onSubmit={handleSubmit}>
           <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="patient-name">Type Of Visit</Label>
-              <Input id="patient-name" placeholder="General Checkup" />
-            </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="date-of-visit">Date of Visit</Label>
               <Input id="date-of-visit" placeholder="Enter date of visit" type="date" />
@@ -246,20 +245,78 @@ const fetchMedicalRecord = async (web5: Web5, did: any) => {
               <Input id="visit-reason" placeholder="Enter reason for visit" />
             </div>
             <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="visit-reason">Name of Doctor</Label>
+              <Input id="visit-reason" placeholder="Enter Doctors Name" />
+            </div>
+            <div className="flex flex-col space-y-1.5">
               <Label htmlFor="visit-summary">Visit Summary</Label>
               <Textarea className="min-h-[100px]" id="visit-summary" placeholder="Enter a summary of the visit" />
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="additional-notes">Additional Notes</Label>
-              <Textarea className="min-h-[100px]" id="additional-notes" placeholder="Enter any additional notes" />
-            </div>
           </div>
-        </form>
+        </form> */}
+        <form onSubmit={(e) => handleSubmit(e)}>
+            <div className="flex flex-col">
+              <label className="sr-only" htmlFor="doctor">
+                Doctor
+              </label>
+              <input
+                type="text"
+                className="block w-full rounded-md bg-white border border-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2 placeholder-gray-500 my-2 text-gray-900"
+                name="doctor"
+                placeholder="Name of Doctor"
+                id="doctor"
+                value={doctor}
+                onChange={(e) => setDoctor(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="keywords" className="sr-only">
+                Summary
+              </label>
+              <textarea
+                rows={3}
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                name="keyWords"
+                id="keyWords"
+                placeholder="Summary of visit"
+                className="block w-full rounded-md bg-white border border-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2 placeholder-gray-500 my-2 text-gray-900"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="sr-only" htmlFor="reason">
+                Reason For Visit
+              </label>
+              <select
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="block w-full rounded-md bg-white border border-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2 placeholder-gray-500 my-2 text-gray-900"
+                name="reason"
+                id="reason"
+              >
+                <option value="default">Select Reason (Optional)</option>
+                <option value="General">General</option>
+                <option value="Eye">Eye</option>
+                <option value="Dental">Dental</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <button
+              className={`bg-blue-600 w-full hover:bg-blue-700 text-white font-bold mt-6 py-2 px-4 rounded
+                ${
+                  isSaving || doctor === ""
+                    ? "cursor-not-allowed opacity-50"
+                    : ""
+                }`}
+              type="submit"
+              disabled={isSaving || doctor === ""}
+            >
+              {isSaving ? "Saving to DWN..." : "Save to DWN"}
+            </button>
+          </form>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline">Clear</Button>
-        <Button>Submit</Button>
-      </CardFooter>
     </Card>
       </div>
     </div>
