@@ -5,13 +5,15 @@
 import Link from "next/link"
 import { CardTitle, CardHeader, CardContent, Card } from "../components/card"
 import { Web5 } from "@web5/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, SVGProps } from "react";
 
 export default function Component() {
       
   const [web5, setWeb5] = useState<Web5 | null>(null)
   const [myDid, setMyDid] = useState<string | null>(null)
 
+  
+  //connecting to web5 and logging my credentials
   useEffect(() => {
     const initWeb5 = async () => {
       const { web5, did } = await Web5.connect();
@@ -22,9 +24,97 @@ export default function Component() {
       console.log("web5:", web5)
       console.log("did:", did)
 
+      if (web5 && did) {
+        await configureProtocol(web5, did);
+      }
+
     };
-    initWeb5();
+     initWeb5();
   }, []);
+
+//defining the mediBank protocol 
+  const createProtocolDefinition = () => {
+    const mediBankProtocolDefinition = 
+    {
+      "protocol": "https://medibankbytes.dev/medical-records-protocol.dev",
+      "published": true,
+      "types": {
+        "medicalRecord": {
+          "schema": "medicalRecord",
+          "dataFormats": ["application/json"],
+        },
+      },
+      "structure": {
+        "medicalRecord": {
+          "$actions": [
+            { 
+              "who": "anyone",
+              "can": "write" 
+            },
+            { 
+              "who": "author", 
+              "of": "medicalRecord",
+              "can": "read" 
+            }
+          ],
+        },
+      },
+    };
+    return mediBankProtocolDefinition;
+  };
+
+
+
+
+  //installing defined protocol
+  const installProtocolLocally = async (web5: Web5, protocolDefinition: any) => {
+    return await web5.dwn.protocols.configure({
+      message: {
+        definition: protocolDefinition,
+      },
+    });
+  };
+
+  // console.log("Local Protocol:", installProtocolLocally)
+
+
+  //Query for Protocol
+  const queryForProtocol = async (web5: Web5) => {
+    return await web5.dwn.protocols.query({
+      message: {
+        filter: {
+          protocol: "https://medibank.dev/medical-records-protocol",
+        },
+      },
+    });
+  };
+
+  // console.log("Query Protocol:", queryForProtocol)
+
+  //configuring the protocol
+  const configureProtocol = async (web5: Web5, did: any) => {
+    const protocolDefinition = await createProtocolDefinition();
+
+    const { protocols: localProtocol, status: localProtocolStatus } =
+        await queryForProtocol(web5);
+    console.log({ localProtocol, localProtocolStatus });
+    
+    if (localProtocolStatus.code !== 200 || localProtocol.length === 0) {
+        const { protocol, status } = await installProtocolLocally(web5, protocolDefinition);
+        console.log("Protocol installed locally", protocol, status);
+
+        // Check if 'protocol' is not undefined before using it
+        if (protocol) {
+            const { status: configureRemoteStatus } = await protocol.send(did);
+            console.log("Did the protocol install on the remote DWN?", configureRemoteStatus);
+        } else {
+            console.error("Protocol is undefined after installation");
+        }
+    } else {
+        console.log("Protocol already installed");
+    }
+};
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -85,7 +175,7 @@ export default function Component() {
   )
 }
 
-function StethoscopeIcon(props) {
+function StethoscopeIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
