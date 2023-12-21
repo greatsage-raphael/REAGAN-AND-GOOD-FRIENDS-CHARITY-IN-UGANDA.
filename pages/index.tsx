@@ -16,7 +16,7 @@ export default function Component() {
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-semibold">My Paths</h2>
             <Button className="text-sm" variant="ghost">
-              Edit
+              Edit .
             </Button>
           </div>
           <div className="space-y-4">
