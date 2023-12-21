@@ -1,284 +1,133 @@
-import { CardTitle, CardHeader, CardContent, Card, CardDescription, CardFooter } from "../components/card"
-import {  Web5 } from "@web5/api";
-import { useState, useEffect, SVGProps } from "react";
-import { useRouter } from 'next/router'
+import { SVGProps } from "react"
+import { Button } from "../components/button"
 
 export default function Component() {
-      
-  const [web5, setWeb5] = useState<Web5 | null>(null)
-  const [myDid, setMyDid] = useState<string | null>(null)
-  const [doctor, setDoctor] = useState<string>("")
-  const [summary, setSummary] = useState<string >("")
-  const [date, setDate] = useState<string | null >(null)
-  const [reason, setReason] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
-  const router = useRouter()
-
-  
-  //connecting to web5 and logging my credentials
-  useEffect(() => {
-    const initWeb5 = async () => {
-      const { web5, did } = await Web5.connect();
-
-      setWeb5(web5);
-      setMyDid(did);
-
-      console.log("web5:", web5)
-      console.log("did:", did)
-
-      if (web5 && did) {
-        await configureProtocol(web5, did);
-        await fetchMedicalRecord(web5, did)
-      }
-
-    };
-     initWeb5();
-  }, []);
-
-//defining the mediBank protocol 
-  const createProtocolDefinition = () => {
-    const mediBankProtocolDefinition = 
-    {
-      "protocol": "https://medibank.dev/medical-records-protocol",
-      "published": true,
-      "types": {
-        "medicalRecord": {
-          "schema": "https://medibank.dev/medicalRecord",
-          "dataFormats": ["application/json"],
-        },
-      },
-      "structure": {
-        "medicalRecord": {
-          "$actions": [
-            { 
-              "who": "anyone",
-              "can": "write" 
-            },
-            { 
-              "who": "author", 
-              "of": "medicalRecord",
-              "can": "read" 
-            }
-          ],
-        },
-      },
-    };
-    return mediBankProtocolDefinition;
-  };
-
-
-
-
-  //installing defined protocol
-  const installProtocolLocally = async (web5: Web5, protocolDefinition: any) => {
-    return await web5.dwn.protocols.configure({
-      message: {
-        definition: protocolDefinition,
-      },
-    });
-  };
-
-  // console.log("Local Protocol:", installProtocolLocally)
-
-
-  //Checking for Protocol existence
-  const queryForProtocol = async (web5: Web5) => {
-    return await web5.dwn.protocols.query({
-      message: {
-        filter: {
-          protocol: "https://medibank.dev/medical-records-protocol",
-        },
-      },
-    });
-  };
-
-  // console.log("Query Protocol:", queryForProtocol)
-
-  //configuring the protocol
-  const configureProtocol = async (web5: Web5, did: any) => {
-    const protocolDefinition = await createProtocolDefinition();
-
-    const { protocols: localProtocol, status: localProtocolStatus } =
-        await queryForProtocol(web5);
-    console.log({ localProtocol, localProtocolStatus });
-    
-    if (localProtocolStatus.code !== 200 || localProtocol.length === 0) {
-        const { protocol, status } = await installProtocolLocally(web5, protocolDefinition);
-        console.log("Protocol installed locally", protocol, status);
-
-        // Check if 'protocol' is not undefined before using it
-        if (protocol) {
-            const { status: configureRemoteStatus } = await protocol.send(did);
-            console.log("Did the protocol install on the remote DWN?", configureRemoteStatus);
-        } else {
-            console.error("Protocol is undefined after installation");
-        }
-    } else {
-        console.log("Protocol already installed");
-    }
-};
-
-
-//making the medical Record
-const constructMedicalRecord = (summary: string, doctor: string, reason: string) => {
-  const currentDate = new Date().toLocaleDateString();
-  const currentTime = new Date().toLocaleTimeString();
-  const medicalRecord = {
-    author: myDid,
-    summary: summary,
-    doctor: doctor,
-    reason: reason,
-    dateAdded: `${currentDate}`,
-    time: `${currentTime}`
-  };
-  console.log("Medicalrecord:", medicalRecord)
-  return medicalRecord;
-};
-
-
-const writeToDwn = async (medicalRecord: any) => {
-  // Check if web5 is not null or undefined
-  if (web5) {
-    const { record } = await web5.dwn.records.write({
-      data: JSON.stringify(medicalRecord),
-      message: {
-        protocol: "https://medibank.dev/medical-records-protocol",
-        protocolPath: "medicalRecord",
-        schema: "https://medibank.dev/medicalRecord",
-        dataFormat: "application/json"
-      },
-    });
-    console.log("medical 1:", medicalRecord)
-    return record;
-  } else {
-    // Handle the case where web5 is null
-    console.error("web5 is null or undefined");
-  }
-};
-
-const handleSubmit = async (e: any) => {
-  e.preventDefault();
-  setIsSaving(true)
-  console.log("summary",summary)
-  console.log("doctor", doctor)
-  console.log("reason", reason)
-  const medicalRecord = constructMedicalRecord(summary, doctor, reason);
-  const record = await writeToDwn(medicalRecord);
-  console.log("record", record)
-  setIsSaving(false)
-  router.push("./records")
-};
-
-
-
-const fetchMedicalRecord = async (web5: Web5, did: any) => {
-  const response = await web5.dwn.records.query({
-    from: did,
-    message: {
-      filter: {
-        protocol: "https://medibank.dev/medical-records-protocol",
-        schema: "https://medibank.dev/medicalRecord",
-      },
-    },
-  });
-
-  if (response.records && response.status.code === 200) {
-    const receivedRecords = await Promise.all(
-      response.records.map(async (record) => {
-        const data = await record.data.json();
-        return data;
-      })
-    );
-    console.log("Records:", receivedRecords);
-    return receivedRecords;
-  } else {
-    console.log("error:", response.status);
-  }
-};
-
-console.log("fetchMedicalRecord:", fetchMedicalRecord)
-
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <div>
-      <Card>
-      <CardHeader>
-        <CardTitle>Patient Visit Information</CardTitle>
-        <CardDescription>Please fill out this form regarding your recent medical visit.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={(e) => handleSubmit(e)}>
-            <div className="flex flex-col">
-              <label className="sr-only" htmlFor="doctor">
-                Doctor
-              </label>
-              <input
-                type="text"
-                className="block w-full rounded-md bg-white border border-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2 placeholder-gray-500 my-2 text-gray-900"
-                name="doctor"
-                placeholder="Name of Doctor"
-                id="doctor"
-                value={doctor}
-                onChange={(e) => setDoctor(e.target.value)}
-                required
-              />
+    <div className="flex justify-between">
+      <div className="w-3/5 space-y-6">
+        <div className="p-4 bg-white shadow">
+          <h2 className="text-lg font-semibold">Primary </h2>
+          <p>
+            Go deeper and learn job-ready skills. Practice with real-world projects, take assessments, and earn
+            certificates.
+          </p>
+        </div>
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold">My Paths</h2>
+            <Button className="text-sm" variant="ghost">
+              Edit
+            </Button>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 bg-white shadow cursor-pointer">
+              <h3 className="font-semibold">CAREER PATH</h3>
+              <p className="text-xl font-bold">Software Engineer</p>
+              <div className="w-full bg-gray-200 h-2 rounded">
+                <div
+                  className="bg-yellow-400 h-2 rounded"
+                  style={{
+                    width: "7%",
+                  }}
+                />
+              </div>
+              <p className="mt-2">7%</p>
             </div>
-            <div className="flex flex-col">
-              <label htmlFor="keywords" className="sr-only">
-                Summary
-              </label>
-              <textarea
-                rows={3}
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                name="keyWords"
-                id="keyWords"
-                placeholder="Summary of visit"
-                className="block w-full rounded-md bg-white border border-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2 placeholder-gray-500 my-2 text-gray-900"
-              />
+            <div className="p-4 bg-white shadow cursor-pointer">
+              <h3 className="font-semibold">CAREER PATH</h3>
+              <p className="text-xl font-bold">Lawyer</p>
+              <div className="w-full bg-gray-200 h-2 rounded">
+                <div
+                  className="bg-yellow-400 h-2 rounded"
+                  style={{
+                    width: "15%",
+                  }}
+                />
+              </div>
+              <p className="mt-2">15%</p>
             </div>
-            <div className="flex flex-col">
-              <label className="sr-only" htmlFor="reason">
-                Reason For Visit
-              </label>
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="block w-full rounded-md bg-white border border-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2 placeholder-gray-500 my-2 text-gray-900"
-                name="reason"
-                id="reason"
-              >
-                <option value="default">Select Reason (Optional)</option>
-                <option value="General">General</option>
-                <option value="Eye">Eye</option>
-                <option value="Dental">Dental</option>
-                <option value="Other">Other</option>
-              </select>
+            <div className="p-4 bg-white shadow cursor-pointer">
+              <h3 className="font-semibold">SKILL PATH</h3>
+              <p className="text-xl font-bold">JavaScript</p>
+              <div className="w-full bg-gray-200 h-2 rounded">
+                <div
+                  className="bg-yellow-400 h-2 rounded"
+                  style={{
+                    width: "11%",
+                  }}
+                />
+              </div>
+              <p className="mt-2">11%</p>
             </div>
-
-            <button
-              className={`bg-blue-600 w-full hover:bg-blue-700 text-white font-bold mt-6 py-2 px-4 rounded
-                ${
-                  isSaving || doctor === ""
-                    ? "cursor-not-allowed opacity-50"
-                    : ""
-                }`}
-              type="submit"
-              disabled={isSaving || doctor === ""}
-            >
-              {isSaving ? "Saving to DWN..." : "Save to DWN"}
-            </button>
-          </form>
-      </CardContent>
-    </Card>
+            <div className="p-4 bg-white shadow cursor-pointer">
+              <h3 className="font-semibold">SKILL PATH</h3>
+              <p className="text-xl font-bold">Web Scraping</p>
+              <div className="w-full bg-gray-200 h-2 rounded">
+                <div
+                  className="bg-yellow-400 h-2 rounded"
+                  style={{
+                    width: "4%",
+                  }}
+                />
+              </div>
+              <p className="mt-2">4%</p>
+            </div>
+            <div className="p-4 bg-white shadow cursor-pointer">
+              <h3 className="font-semibold">SKILL PATH</h3>
+              <p className="text-xl font-bold">Pen Testing</p>
+              <div className="w-full bg-gray-200 h-2 rounded">
+                <div
+                  className="bg-yellow-400 h-2 rounded"
+                  style={{
+                    width: "51%",
+                  }}
+                />
+              </div>
+              <p className="mt-2">51%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="w-2/5 p-4 bg-white shadow space-y-6">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-lg font-semibold">My Goals</h2>
+          <Button className="text-sm" variant="ghost">
+            Edit
+          </Button>
+        </div>
+        <div>
+          <h3 className="font-semibold text-blue-800">Build a project</h3>
+          <div className="mt-4">
+            <h4 className="font-semibold">THIS WEEK</h4>
+            <div className="flex items-center space-x-2 mt-2">
+              <CircleIcon className="h-5 w-5 text-gray-400" />
+              <p>0 of 5 days</p>
+            </div>
+            <div className="flex space-x-1 mt-1">
+              <CalendarIcon className="h-5 w-5 text-gray-400" />
+              <CalendarIcon className="h-5 w-5 text-gray-400" />
+              <CalendarIcon className="h-5 w-5 text-gray-400" />
+              <CalendarIcon className="h-5 w-5 text-gray-400" />
+              <CalendarIcon className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <h4 className="font-semibold">TARGET MET</h4>
+            <div className="flex items-center space-x-2 mt-2">
+              <CircleIcon className="h-5 w-5 text-gray-400" />
+              <p>0 weeks in a row</p>
+            </div>
+          </div>
+        </div>
+        <Button className="text-blue-800" variant="ghost">
+          View Achievements →
+        </Button>
       </div>
     </div>
   )
 }
 
-
-
-function CheckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+function CalendarIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -292,8 +141,30 @@ function CheckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <polyline points="20 6 9 17 4 12" />
+      <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+      <line x1="16" x2="16" y1="2" y2="6" />
+      <line x1="8" x2="8" y1="2" y2="6" />
+      <line x1="3" x2="21" y1="10" y2="10" />
     </svg>
   )
 }
 
+
+function CircleIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+    </svg>
+  )
+}
