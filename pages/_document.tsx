@@ -8,19 +8,19 @@ class MyDocument extends Document {
           <link rel="icon" href="/favicon.ico" />
           <meta
             name="description"
-            content="Save your Medical Records on a decentralized platform and take back your medical identity today"
+            content="REAGAN AND GOOD FRIENDS CHARITY IN UGANDA."
           />
           <meta property="og:site_name" content="medibank.io" />
           <meta
             property="og:description"
-            content="Save your Medical Records on a decentralized platform and take back your medical identity today."
+            content="REAGAN AND GOOD FRIENDS CHARITY IN UGANDA."
           />
-          <meta property="og:title" content="MediBank" />
-          <meta name="twitter:card" content="MediBank" />
-          <meta name="twitter:title" content="MediBank" />
+          <meta property="og:title" content="REAGAN AND GOOD FRIENDS CHARITY IN UGANDA." />
+          <meta name="twitter:card" content="REAGAN AND GOOD FRIENDS CHARITY IN UGANDA." />
+          <meta name="twitter:title" content="REAGAN AND GOOD FRIENDS CHARITY IN UGANDA." />
           <meta
             name="twitter:description"
-            content="Save your Medical Records on a decentralized platform and take back your medical identity today."
+            content="REAGAN AND GOOD FRIENDS CHARITY IN UGANDA."
           />
         </Head>
         <body>

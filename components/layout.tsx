@@ -10,7 +10,6 @@ interface MyComponentProps {
     <>
       <Navbar />
       <main>{children}</main>
-      <Footer />
     </>
   )
 }
