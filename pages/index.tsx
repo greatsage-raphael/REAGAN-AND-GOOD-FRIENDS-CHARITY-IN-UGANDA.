@@ -29,7 +29,7 @@ export default function Home() {
           />
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Making a Difference Together</h1>
-            <p className="text-xl md:text-2xl mb-8">Join us in our mission to create a better world for all</p>
+            <p className="text-xl md:text-2xl mb-8">Join us in our mission to create a better Uganda for all</p>
             <Link href="https://forms.gle/njveg4vUGEfbUZWo7" className="bg-red-500 text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-red-600 transition duration-300">
               Donate Now
             </Link>
@@ -43,12 +43,12 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <p className="text-lg mb-4">
-                  GlobalAid is committed to providing humanitarian assistance and fostering sustainable development in communities around the world. Our dedicated team works tirelessly to make a positive impact on lives every day.
+                  GlobalAid is committed to providing humanitarian assistance and fostering sustainable development in communities in Uganda. Our dedicated team works tirelessly to make a positive impact on lives every day.
                 </p>
                 <ul className="list-disc list-inside space-y-2">
-                  <li>Over 1 million people helped</li>
-                  <li>Active in 50+ countries</li>
-                  <li>20 years of experience</li>
+                  <li>Over 7000 people helped</li>
+                  <li>Active in 10+ districts</li>
+                  <li>2 years of experience</li>
                 </ul>
               </div>
               <div className="grid grid-cols-2 gap-4">
