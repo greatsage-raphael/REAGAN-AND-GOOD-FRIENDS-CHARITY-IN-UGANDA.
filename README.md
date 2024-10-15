@@ -1,19 +1,14 @@
-# [MediBank]
+# [REAGAN & GOOD FRIENDS CHARITY]
 
-This project uses web5 to electronically store a patients medical records in a Decentralized Web Node. 
+This project is for practice
 
-[![Audio Scripter](./public/audio.png)](https://audio-scripter.vercel.app/)
-
-## How it works
-
-It enables a user  to easily save and share medical records.
 
 ## Running Locally
- You can git clone from [this](https://github.com/greatsage-raphael/audioScripter).
+ You can git clone from [this](https://github.com/greatsage-raphael/REAGAN-AND-GOOD-FRIENDS-CHARITY-IN-UGANDA.).
 
 ### Cloning the repository the local machine.
 
 ```bash
-git clone
+git clone https://github.com/greatsage-raphael/REAGAN-AND-GOOD-FRIENDS-CHARITY-IN-UGANDA.
 ```
 
