@@ -43,7 +43,7 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <p className="text-lg mb-4">
-                  GlobalAid is committed to providing humanitarian assistance and fostering sustainable development in communities in Uganda. Our dedicated team works tirelessly to make a positive impact on lives every day.
+                Reagan & Good Friends Charity is committed to providing humanitarian assistance and fostering sustainable development in communities in Uganda. Our dedicated team works tirelessly to make a positive impact on lives every day.
                 </p>
                 <ul className="list-disc list-inside space-y-2">
                   <li>Over 7000 people helped</li>
@@ -78,15 +78,15 @@ export default function Home() {
                 <Image src="/education.jpg" alt="Education" width={300} height={200} className="w-full" />
                 <div className="p-4">
                   <h3 className="font-bold text-xl mb-2">Education</h3>
-                  <p className="text-gray-600 mb-4">Providing essential education services to communities in need.</p>
+                  <p className="text-gray-600 mb-4">Providing essential education services to communities in need. Through textbooks and on site lessons </p>
                 </div>
               </div>
 
               <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:animate-bounce" style={{animationDuration: '0.5s'}}>
                 <Image src="/clearWater.jpeg" alt="Clean Water" width={300} height={200} className="w-full" />
                 <div className="p-4">
-                  <h3 className="font-bold text-xl mb-2">Clean Water</h3>
-                  <p className="text-gray-600 mb-4">Providing essential clean water services to communities in need.</p>
+                  <h3 className="font-bold text-xl mb-2">Borehole Installation</h3>
+                  <p className="text-gray-600 mb-4">With our experienced partners, we install boreholes n different communitiesin need of Water.</p>
                 </div>
               </div>
 
