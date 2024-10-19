@@ -30,7 +30,7 @@ export default function Home() {
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Making a Difference Together</h1>
             <p className="text-xl md:text-2xl mb-8">Join us in our mission to create a better Uganda for all</p>
-            <Link href="https://forms.gle/njveg4vUGEfbUZWo7" className="bg-red-500 text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-red-600 transition duration-300">
+            <Link href="https://forms.gle/yjDk1B8qQNcMHC8GA" className="bg-red-500 text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-red-600 transition duration-300">
               Donate Now
             </Link>
           </div>
@@ -125,7 +125,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-2xl font-semibold mb-4">Stay Informed</h3>
-                <Link href="https://forms.gle/njveg4vUGEfbUZWo7">
+                <Link href="https://forms.gle/yjDk1B8qQNcMHC8GA">
                   <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-300">
                     Get In Touch
                   </button>
